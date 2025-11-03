@@ -1,0 +1,28 @@
+server.port=8081
+
+spring.application.name=fleet-service
+
+# Database Configuration
+spring.datasource.url=jdbc:postgresql://localhost:5432/fleet_db
+spring.datasource.username=postgres
+spring.datasource.password=postgres
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# JPA Configuration
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.properties.hibernate.format_sql=true
+
+# Redis Configuration
+spring.data.redis.host=localhost
+spring.data.redis.port=6379
+spring.data.redis.timeout=2000ms
+
+# Actuator
+management.endpoints.web.exposure.include=health,info
+management.endpoint.health.show-details=always
+
+# Logging
+logging.level.com.redbus=INFO
+logging.level.org.hibernate.SQL=DEBUG

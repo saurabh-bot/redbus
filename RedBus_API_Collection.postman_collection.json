@@ -1,0 +1,1181 @@
+{
+	"info": {
+		"_postman_id": "redbus-microservices-2025",
+		"name": "RedBus Microservices API Collection",
+		"description": "Complete API collection for RedBus-like microservices application\n\nServices:\n- Gateway Service (Port 8080) - Main entry point for all client requests\n- Fleet Service (Port 8081) - Manages cities, buses, routes, trips, and seats\n- Search Service (Port 8082) - Handles bus search functionality\n- Booking Service (Port 8083) - Manages bookings and reservations\n\nNote: All APIs use snake_case for JSON field names (city_code, city_name, etc.)\nCity APIs use city codes instead of IDs (e.g., DELHI, MUMBAI, AYODH)\nSearch APIs use city codes for source and destination",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Gateway Service (Port 8080)",
+			"item": [
+				{
+					"name": "Search",
+					"item": [
+						{
+							"name": "Search Buses",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{gatewayBaseUrl}}/api/v1/search/buses?source=DELHI&destination=AYODH&travel_date=2025-11-05",
+									"host": ["{{gatewayBaseUrl}}"],
+									"path": ["api", "v1", "search", "buses"],
+									"query": [
+										{
+											"key": "source",
+											"value": "DELHI",
+											"description": "City code (e.g., DELHI, AYODH, MUMBAI)"
+										},
+										{
+											"key": "destination",
+											"value": "AYODH",
+											"description": "City code"
+										},
+										{
+											"key": "travel_date",
+											"value": "2025-11-05",
+											"description": "Date in YYYY-MM-DD format"
+										},
+										{
+											"key": "is_ac",
+											"value": "true",
+											"disabled": true,
+											"description": "Filter by AC/Non-AC"
+										},
+										{
+											"key": "bus_type",
+											"value": "SLEEPER",
+											"disabled": true,
+											"description": "Filter by seat type (SEATER, SLEEPER)"
+										},
+										{
+											"key": "sort_by",
+											"value": "departure",
+											"disabled": true,
+											"description": "Sort by: departure, fare, duration"
+										},
+										{
+											"key": "page",
+											"value": "1",
+											"disabled": true
+										},
+										{
+											"key": "page_size",
+											"value": "20",
+											"disabled": true
+										}
+									]
+								},
+								"description": "Search buses via gateway. Proxies to Search Service."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Seats",
+					"item": [
+						{
+							"name": "Get Seat Availability",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{gatewayBaseUrl}}/api/v1/seats/availability?trip_id=1&from_stop_sequence=1&to_stop_sequence=3",
+									"host": ["{{gatewayBaseUrl}}"],
+									"path": ["api", "v1", "seats", "availability"],
+									"query": [
+										{
+											"key": "trip_id",
+											"value": "1"
+										},
+										{
+											"key": "from_stop_sequence",
+											"value": "1"
+										},
+										{
+											"key": "to_stop_sequence",
+											"value": "3"
+										}
+									]
+								},
+								"description": "Get seat availability via gateway. Proxies to Fleet Service."
+							},
+							"response": []
+						},
+						{
+							"name": "Lock Seats",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"trip_id\": 1,\n  \"seat_numbers\": [\"A1\", \"A2\"],\n  \"from_stop_sequence\": 1,\n  \"to_stop_sequence\": 3\n}"
+								},
+								"url": {
+									"raw": "{{gatewayBaseUrl}}/api/v1/seats/lock",
+									"host": ["{{gatewayBaseUrl}}"],
+									"path": ["api", "v1", "seats", "lock"]
+								},
+								"description": "Lock seats via gateway. Locks expire after 15 minutes. Proxies to Fleet Service."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Bookings",
+					"item": [
+						{
+							"name": "Create Booking",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"user_id\": 1,\n  \"trip_id\": 1,\n  \"boarding_city_name\": \"Delhi\",\n  \"dropping_city_name\": \"Jaipur\",\n  \"boarding_stop_sequence\": 1,\n  \"dropping_stop_sequence\": 3,\n  \"boarding_datetime\": \"2025-11-05T10:00:00\",\n  \"dropping_datetime\": \"2025-11-05T18:00:00\",\n  \"total_amount\": 1500.0,\n  \"passengers\": [\n    {\n      \"seat_number\": \"A1\",\n      \"name\": \"John Doe\",\n      \"age\": 30,\n      \"gender\": \"MALE\",\n      \"email\": \"john@example.com\",\n      \"phone_number\": \"9876543210\"\n    }\n  ]\n}"
+								},
+								"url": {
+									"raw": "{{gatewayBaseUrl}}/api/v1/bookings",
+									"host": ["{{gatewayBaseUrl}}"],
+									"path": ["api", "v1", "bookings"]
+								},
+								"description": "Create booking via gateway. Proxies to Booking Service. Status will be INITIATED."
+							},
+							"response": []
+						},
+						{
+							"name": "Confirm Booking",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"booking_reference_id\": \"REDBUS20251103LURXCC\",\n  \"payment_reference_id\": \"PAY123456789\"\n}"
+								},
+								"url": {
+									"raw": "{{gatewayBaseUrl}}/api/v1/bookings/confirm",
+									"host": ["{{gatewayBaseUrl}}"],
+									"path": ["api", "v1", "bookings", "confirm"]
+								},
+								"description": "Confirm booking via gateway. Orchestrates: confirms seats in Fleet Service, confirms booking in Booking Service. Status changes from INITIATED to COMPLETED."
+							},
+							"response": []
+						},
+						{
+							"name": "Cancel Booking",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"booking_reference_id\": \"REDBUS20251103LURXCC\"\n}"
+								},
+								"url": {
+									"raw": "{{gatewayBaseUrl}}/api/v1/bookings/cancel",
+									"host": ["{{gatewayBaseUrl}}"],
+									"path": ["api", "v1", "bookings", "cancel"]
+								},
+								"description": "Cancel booking via gateway. Orchestrates: cancels seats in Fleet Service, cancels booking in Booking Service. Only COMPLETED bookings can be cancelled. Status changes to CANCELLED."
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Fleet Service (Port 8081)",
+			"item": [
+				{
+					"name": "City Management",
+					"item": [
+						{
+							"name": "Create City",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"city_name\": \"Delhi\",\n  \"state\": \"Delhi\",\n  \"country\": \"India\"\n}"
+								},
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/cities",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "cities"]
+								},
+								"description": "Creates a new city. City code is auto-generated from city name (e.g., DELHI, MUMBAI)."
+							},
+							"response": []
+						},
+						{
+							"name": "Get All Cities",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/cities",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "cities"]
+								},
+								"description": "Returns all cities with city_code and total_count."
+							},
+							"response": []
+						},
+						{
+							"name": "Get City by Code",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/cities/:cityCode",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "cities", ":cityCode"],
+									"variable": [
+										{
+											"key": "cityCode",
+											"value": "DELHI",
+											"description": "City code (e.g., DELHI, MUMBAI, AYODH)"
+										}
+									]
+								},
+								"description": "Get city by code (not ID)."
+							},
+							"response": []
+						},
+						{
+							"name": "Update City",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"city_name\": \"New Delhi\",\n  \"state\": \"Delhi\",\n  \"country\": \"India\"\n}"
+								},
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/cities/:cityCode",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "cities", ":cityCode"],
+									"variable": [
+										{
+											"key": "cityCode",
+											"value": "DELHI"
+										}
+									]
+								},
+								"description": "Update city using city code."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Bus Management",
+					"item": [
+						{
+							"name": "Create Bus",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"operator_id\": 1,\n  \"bus_number\": \"RJ-14-AB-1234\",\n  \"seat_type\": \"SLEEPER\",\n  \"is_ac\": true,\n  \"total_seats\": 40,\n  \"amenities\": {\n    \"wifi\": true,\n    \"charging_point\": true,\n    \"blanket\": true,\n    \"water\": true,\n    \"live_tracking\": true\n  }\n}"
+								},
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/buses",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "buses"]
+								},
+								"description": "Creates a new bus."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Bus by ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/buses/:busId",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "buses", ":busId"],
+									"variable": [
+										{
+											"key": "busId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "List Buses",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/buses?page=1&page_size=10",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "buses"],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "page_size",
+											"value": "10"
+										},
+										{
+											"key": "operator_id",
+											"value": "",
+											"disabled": true
+										},
+										{
+											"key": "is_active",
+											"value": "",
+											"disabled": true
+										},
+										{
+											"key": "seat_type",
+											"value": "",
+											"disabled": true,
+											"description": "SLEEPER, SEATER"
+										}
+									]
+								},
+								"description": "Returns buses with pagination and total_count."
+							},
+							"response": []
+						},
+						{
+							"name": "Update Bus",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"bus_number\": \"RJ-14-AB-5678\",\n  \"is_active\": false,\n  \"amenities\": {\n    \"wifi\": false\n  }\n}"
+								},
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/buses/:busId",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "buses", ":busId"],
+									"variable": [
+										{
+											"key": "busId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Route Management",
+					"item": [
+						{
+							"name": "Create Route",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"bus_id\": 1,\n  \"source_city_code\": \"DELHI\",\n  \"destination_city_code\": \"AYODH\",\n  \"distance_km\": 850,\n  \"estimated_duration_minutes\": 960,\n  \"is_active\": true\n}"
+								},
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/routes",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "routes"]
+								},
+								"description": "Creates a route using city codes (not IDs)."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Route by ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/routes/:routeId",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "routes", ":routeId"],
+									"variable": [
+										{
+											"key": "routeId",
+											"value": "1"
+										}
+									]
+								},
+								"description": "Returns route with source_city_code and destination_city_code."
+							},
+							"response": []
+						},
+						{
+							"name": "Update Route",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"source_city_code\": \"DELHI\",\n  \"destination_city_code\": \"AYODH\",\n  \"distance_km\": 680,\n  \"estimated_duration_minutes\": 740\n}"
+								},
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/routes/:routeId",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "routes", ":routeId"],
+									"variable": [
+										{
+											"key": "routeId",
+											"value": "1"
+										}
+									]
+								},
+								"description": "Update route using city codes."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Route Stop Management",
+					"item": [
+						{
+							"name": "Create Route Stop",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"city_code\": \"AJMER\",\n  \"sequence\": 2,\n  \"arrival_offset_minutes\": 180,\n  \"departure_offset_minutes\": 195,\n  \"fare_from_start\": 200,\n  \"is_boarding_point\": true,\n  \"is_dropping_point\": true\n}"
+								},
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/routes/:routeId/stops",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "routes", ":routeId", "stops"],
+									"variable": [
+										{
+											"key": "routeId",
+											"value": "1"
+										}
+									]
+								},
+								"description": "Create route stop using city_code (not cityId)."
+							},
+							"response": []
+						},
+						{
+							"name": "Get All Route Stops",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/routes/:routeId/stops",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "routes", ":routeId", "stops"],
+									"variable": [
+										{
+											"key": "routeId",
+											"value": "1"
+										}
+									]
+								},
+								"description": "Returns stops with city_code (not city_id), ordered by sequence."
+							},
+							"response": []
+						},
+						{
+							"name": "Update Route Stop",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"city_code\": \"AJMER\",\n  \"sequence\": 2,\n  \"fare_from_start\": 350,\n  \"departure_offset_minutes\": 230\n}"
+								},
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/routes/:routeId/stops/:routeStopId",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "routes", ":routeId", "stops", ":routeStopId"],
+									"variable": [
+										{
+											"key": "routeId",
+											"value": "1"
+										},
+										{
+											"key": "routeStopId",
+											"value": "1"
+										}
+									]
+								},
+								"description": "Update route stop using city_code."
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Route Stop",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/routes/:routeId/stops/:routeStopId",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "routes", ":routeId", "stops", ":routeStopId"],
+									"variable": [
+										{
+											"key": "routeId",
+											"value": "1"
+										},
+										{
+											"key": "routeStopId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Seat Layout Management",
+					"item": [
+						{
+							"name": "Create Seat Layout",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "[\n  {\n    \"seat_number\": \"A1\",\n    \"seat_type\": \"WINDOW\",\n    \"deck\": \"LOWER_DECK\",\n    \"row_number\": 1,\n    \"column_number\": 1,\n    \"position_x\": 10,\n    \"position_y\": 20,\n    \"price\": 1200.0,\n    \"is_ladies_seat\": false,\n    \"base_price_multiplier\": 1.2\n  },\n  {\n    \"seat_number\": \"A2\",\n    \"seat_type\": \"MIDDLE\",\n    \"deck\": \"LOWER_DECK\",\n    \"row_number\": 1,\n    \"column_number\": 2,\n    \"position_x\": 50,\n    \"position_y\": 20,\n    \"price\": 1000.0,\n    \"is_ladies_seat\": false,\n    \"base_price_multiplier\": 1.0\n  }\n]"
+								},
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/buses/:busId/seat-layout",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "buses", ":busId", "seat-layout"],
+									"variable": [
+										{
+											"key": "busId",
+											"value": "1"
+										}
+									]
+								},
+								"description": "Creates seat layout for a bus. Accepts array of seat layouts."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Seat Layout",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/buses/:busId/seat-layout",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "buses", ":busId", "seat-layout"],
+									"variable": [
+										{
+											"key": "busId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Seat Layout",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"seat_number\": \"A1\",\n  \"seat_type\": \"WINDOW\",\n  \"deck\": \"LOWER_DECK\",\n  \"is_ladies_seat\": true,\n  \"base_price_multiplier\": 1.3\n}"
+								},
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/buses/:busId/seat-layout/:seatLayoutId",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "buses", ":busId", "seat-layout", ":seatLayoutId"],
+									"variable": [
+										{
+											"key": "busId",
+											"value": "1"
+										},
+										{
+											"key": "seatLayoutId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete All Seat Layouts",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/buses/:busId/seat-layout",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "buses", ":busId", "seat-layout"],
+									"variable": [
+										{
+											"key": "busId",
+											"value": "1"
+										}
+									]
+								},
+								"description": "Deletes all seat layouts for a bus."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Trip Instance Management",
+					"item": [
+						{
+							"name": "Generate Trip Instances",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/trip-instances/generate",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "trip-instances", "generate"]
+								},
+								"description": "Manually triggers generation of trip instances for next 180 days for all active routes."
+							},
+							"response": []
+						},
+						{
+							"name": "Create Trip Instance",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"route_id\": 1,\n  \"date\": \"2025-11-05\"\n}"
+								},
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/trip-instances",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "trip-instances"]
+								},
+								"description": "Creates a single trip instance for a route on a specific date."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Trip Instance by ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/trip-instances/:tripId",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "trip-instances", ":tripId"],
+									"variable": [
+										{
+											"key": "tripId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Trips by Route",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/trip-instances/route/:routeId",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "trip-instances", "route", ":routeId"],
+									"variable": [
+										{
+											"key": "routeId",
+											"value": "1"
+										}
+									]
+								},
+								"description": "Retrieves all trip instances for a route."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Seat Management",
+					"item": [
+						{
+							"name": "Get Seat Availability",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/seats/availability?trip_id=1&from_stop_sequence=1&to_stop_sequence=3",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "seats", "availability"],
+									"query": [
+										{
+											"key": "trip_id",
+											"value": "1"
+										},
+										{
+											"key": "from_stop_sequence",
+											"value": "1"
+										},
+										{
+											"key": "to_stop_sequence",
+											"value": "3"
+										}
+									]
+								},
+								"description": "Returns seat availability with status (AVAILABLE, LOCKED, BOOKED). Includes position_x, position_y, row_number, column_number."
+							},
+							"response": []
+						},
+						{
+							"name": "Lock Seats",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"trip_id\": 1,\n  \"seat_numbers\": [\"A1\", \"A2\"],\n  \"from_stop_sequence\": 1,\n  \"to_stop_sequence\": 3\n}"
+								},
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/seats/lock",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "seats", "lock"]
+								},
+								"description": "Locks seats in Redis for 15 minutes. Prevents overlapping segment bookings."
+							},
+							"response": []
+						},
+						{
+							"name": "Confirm Seats",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"trip_id\": 1,\n  \"seat_numbers\": [\"A1\", \"A2\"],\n  \"from_stop_sequence\": 1,\n  \"to_stop_sequence\": 3\n}"
+								},
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/seats/confirm",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "seats", "confirm"]
+								},
+								"description": "Confirms seat reservations. Checks for lock existence, creates reservation in DB, removes lock from Redis."
+							},
+							"response": []
+						},
+						{
+							"name": "Release Seats",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"trip_id\": 1,\n  \"seat_numbers\": [\"A1\", \"A2\"],\n  \"from_stop_sequence\": 1,\n  \"to_stop_sequence\": 3\n}"
+								},
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/seats/release",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "seats", "release"]
+								},
+								"description": "Releases locked seats from Redis."
+							},
+							"response": []
+						},
+						{
+							"name": "Cancel Seats",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"trip_id\": 1,\n  \"seat_numbers\": [\"A1\", \"A2\"],\n  \"from_stop_sequence\": 1,\n  \"to_stop_sequence\": 3\n}"
+								},
+								"url": {
+									"raw": "{{fleetBaseUrl}}/api/v1/seats/cancel",
+									"host": ["{{fleetBaseUrl}}"],
+									"path": ["api", "v1", "seats", "cancel"]
+								},
+								"description": "Cancels seat reservations by marking them as CANCELLED in database."
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Search Service (Port 8082)",
+			"item": [
+				{
+					"name": "Search Buses",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{searchBaseUrl}}/api/v1/search/buses?source=DELHI&destination=AYODH&travel_date=2025-11-05",
+							"host": ["{{searchBaseUrl}}"],
+							"path": ["api", "v1", "search", "buses"],
+							"query": [
+								{
+									"key": "source",
+									"value": "DELHI",
+									"description": "City code (e.g., DELHI, AYODH)"
+								},
+								{
+									"key": "destination",
+									"value": "AYODH",
+									"description": "City code"
+								},
+								{
+									"key": "travel_date",
+									"value": "2025-11-05",
+									"description": "Date in YYYY-MM-DD format"
+								},
+								{
+									"key": "is_ac",
+									"value": "true",
+									"disabled": true,
+									"description": "Filter by AC/Non-AC"
+								},
+								{
+									"key": "bus_type",
+									"value": "SLEEPER",
+									"disabled": true,
+									"description": "Filter by seat type (SEATER, SLEEPER)"
+								},
+								{
+									"key": "sort_by",
+									"value": "departure",
+									"disabled": true,
+									"description": "Sort by: departure, fare, duration"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "page_size",
+									"value": "20",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Search buses using city codes. Returns from_stop_sequence and to_stop_sequence. Supports caching via Redis."
+					},
+					"response": []
+				},
+				{
+					"name": "Populate Searchable Routes",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{searchBaseUrl}}/api/v1/searchable-routes/populate/:routeId",
+							"host": ["{{searchBaseUrl}}"],
+							"path": ["api", "v1", "searchable-routes", "populate", ":routeId"],
+							"variable": [
+								{
+									"key": "routeId",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Populates searchable routes for all trips of a given route. Creates entries for all possible source-destination combinations."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Booking Service (Port 8083)",
+			"item": [
+				{
+					"name": "Create Booking",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"user_id\": 1,\n  \"trip_id\": 1,\n  \"boarding_city_name\": \"Delhi\",\n  \"dropping_city_name\": \"Jaipur\",\n  \"boarding_stop_sequence\": 1,\n  \"dropping_stop_sequence\": 3,\n  \"boarding_datetime\": \"2025-11-05T10:00:00\",\n  \"dropping_datetime\": \"2025-11-05T18:00:00\",\n  \"total_amount\": 1500.0,\n  \"passengers\": [\n    {\n      \"seat_number\": \"A1\",\n      \"name\": \"John Doe\",\n      \"age\": 30,\n      \"gender\": \"MALE\",\n      \"email\": \"john@example.com\",\n      \"phone_number\": \"9876543210\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{bookingBaseUrl}}/api/v1/bookings",
+							"host": ["{{bookingBaseUrl}}"],
+							"path": ["api", "v1", "bookings"]
+						},
+						"description": "Creates a new booking with INITIATED status. Returns booking_reference_id (not booking_id)."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Booking by Reference",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{bookingBaseUrl}}/api/v1/bookings/reference/:bookingReferenceId",
+							"host": ["{{bookingBaseUrl}}"],
+							"path": ["api", "v1", "bookings", "reference", ":bookingReferenceId"],
+							"variable": [
+								{
+									"key": "bookingReferenceId",
+									"value": "REDBUS20251103LURXCC",
+									"description": "Booking reference ID (e.g., REDBUS20251103LURXCC)"
+								}
+							]
+						},
+						"description": "Retrieves booking details by booking reference ID. Response does not include booking_id."
+					},
+					"response": []
+				},
+				{
+					"name": "Confirm Booking",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"booking_reference_id\": \"REDBUS20251103LURXCC\",\n  \"payment_reference_id\": \"PAY123456789\"\n}"
+						},
+						"url": {
+							"raw": "{{bookingBaseUrl}}/api/v1/bookings/confirm",
+							"host": ["{{bookingBaseUrl}}"],
+							"path": ["api", "v1", "bookings", "confirm"]
+						},
+						"description": "Confirms booking after successful payment. Changes status from INITIATED to COMPLETED. Only INITIATED bookings can be confirmed."
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel Booking",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"booking_reference_id\": \"REDBUS20251103LURXCC\"\n}"
+						},
+						"url": {
+							"raw": "{{bookingBaseUrl}}/api/v1/bookings/cancel",
+							"host": ["{{bookingBaseUrl}}"],
+							"path": ["api", "v1", "bookings", "cancel"]
+						},
+						"description": "Cancels a COMPLETED booking. Changes status to CANCELLED. Only COMPLETED bookings can be cancelled."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Health Checks",
+			"item": [
+				{
+					"name": "Gateway Service Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gatewayBaseUrl}}/actuator/health",
+							"host": ["{{gatewayBaseUrl}}"],
+							"path": ["actuator", "health"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fleet Service Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{fleetBaseUrl}}/actuator/health",
+							"host": ["{{fleetBaseUrl}}"],
+							"path": ["actuator", "health"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Service Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{searchBaseUrl}}/actuator/health",
+							"host": ["{{searchBaseUrl}}"],
+							"path": ["actuator", "health"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Booking Service Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{bookingBaseUrl}}/actuator/health",
+							"host": ["{{bookingBaseUrl}}"],
+							"path": ["actuator", "health"]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "gatewayBaseUrl",
+			"value": "http://localhost:8080",
+			"type": "string",
+			"description": "Gateway Service base URL"
+		},
+		{
+			"key": "fleetBaseUrl",
+			"value": "http://localhost:8081",
+			"type": "string",
+			"description": "Fleet Service base URL"
+		},
+		{
+			"key": "searchBaseUrl",
+			"value": "http://localhost:8082",
+			"type": "string",
+			"description": "Search Service base URL"
+		},
+		{
+			"key": "bookingBaseUrl",
+			"value": "http://localhost:8083",
+			"type": "string",
+			"description": "Booking Service base URL"
+		}
+	]
+}
