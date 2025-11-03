@@ -169,7 +169,8 @@ The script will:
 4. ✅ Build all microservices
 5. ✅ Start all 4 services
 6. ✅ Wait for services to initialize
-7. ✅ Seed initial data (cities, buses, routes, trips, seat layouts)
+7. ✅ Shared database_dump also, so no need to create seed data
+8. ✅ Can easily Start testing with gateway APIs or core APIs
 
 **Expected Time**: 2-3 minutes
 
@@ -263,7 +264,7 @@ Once services are running, access Swagger UI:
 Import `RedBus_API_Collection.postman_collection.json` into Postman for pre-configured API requests.
 
 
-### Seed Data
+### Seed Data (Database dump)
 
 The setup script automatically creates:
 
