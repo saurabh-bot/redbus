@@ -1,8 +1,7 @@
 package com.redbus.gateway.util;
 
 import com.redbus.gateway.constants.GatewayConstants;
-import lombok.Builder;
-import lombok.Value;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -51,13 +50,15 @@ public class BookingExtractor {
                 .build();
     }
     
-    @Value
+    @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class BookingDetails {
-        Long tripId;
-        List<String> seatNumbers;
-        Integer fromStopSequence;
-        Integer toStopSequence;
+        private Long tripId;
+        private List<String> seatNumbers;
+        private Integer fromStopSequence;
+        private Integer toStopSequence;
     }
 }
 
